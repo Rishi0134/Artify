@@ -1,11 +1,11 @@
 .hero {
   position: relative;
-  height: 100vh;
- 
+  min-height: 78vh;
   display: flex;
   align-items: center;
   justify-content: center;
   overflow: hidden;
+  padding-top: 90px;
 }
 
 .overlay {
@@ -17,19 +17,7 @@
     rgba(0, 0, 0, 0.85)
   );
 }
-.hero-content h1 {
-  font-size: 4rem;
-  color: #f5f3ef; /* Warm white */
-}
 
-.hero-content h1 span {
-  color: #ff6b6b; /* Softer coral instead of harsh pink */
-}
-
-.hero-content p {
-  color: #e0e0e0;
-  font-size: 1.2rem;
-}
 .hero-content {
   position: relative;
   text-align: center;
@@ -43,6 +31,7 @@
   font-weight: 700;
   letter-spacing: 1px;
   margin-bottom: 20px;
+  color: #f5f3ef;
 }
 
 .hero-content h1 span {
@@ -50,9 +39,10 @@
 }
 
 .hero-content p {
+  color: #e0e0e0;
   font-size: 1.2rem;
   opacity: 0.85;
-  margin-bottom: 30px;
+  margin-bottom: 24px;
 }
 
 .hero-btn {
@@ -71,11 +61,22 @@
 }
 
 .scroll-indicator {
-  margin-top: 40px;
+  margin-top: 24px;
   cursor: pointer;
 }
 
 .arrow {
   width: 30px;
   color: white;
+}
+
+@media (max-width: 768px) {
+  .hero {
+    min-height: 70vh;
+    padding-top: 80px;
+  }
+
+  .hero-content h1 {
+    font-size: 2.4rem;
+  }
 }

@@ -3,6 +3,13 @@ import { ArrowDownIcon } from "@heroicons/react/24/outline";
 import "./Hero.css";
 
 const Hero = () => {
+  const handleExploreClick = () => {
+    const featuredSection = document.getElementById("featured-artworks");
+    if (featuredSection) {
+      featuredSection.scrollIntoView({ behavior: "smooth", block: "start" });
+    }
+  };
+
   return (
     <section className="hero">
       <div className="overlay" />
@@ -34,6 +41,7 @@ const Hero = () => {
           className="hero-btn"
           whileHover={{ scale: 1.08 }}
           whileTap={{ scale: 0.95 }}
+          onClick={handleExploreClick}
         >
           Explore Collection
         </motion.button>
