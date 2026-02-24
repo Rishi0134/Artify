@@ -1,65 +1,16 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { api, getImageUrl } from "../utils/api";
-import { useMemo, useState } from "react";
 import "./Gallery.css";
 
 const FALLBACK_ARTWORK_IMAGE = "https://via.placeholder.com/600x600?text=Artwork";
-const artworks = [
-  {
-    id: 1,
-    title: "Sunset Valley",
-    style: "Landscape",
-    image: "/Images/art1.jpg",
-  },
-  {
-    id: 2,
-    title: "Golden Meadow",
-    style: "Landscape",
-    image: "/Images/art2.jpg",
-  },
-  {
-    id: 3,
-    title: "Urban Echo",
-    style: "Abstract",
-    image: "/Images/art3.jpg",
-  },
-  {
-    id: 4,
-    title: "Rustic Streets",
-    style: "Modern",
-    image: "/Images/art4.jpg",
-  },
-  {
-    id: 5,
-    title: "Horse Study",
-    style: "Realism",
-    image: "https://images.unsplash.com/photo-1577083552431-6e5fd01988f1?q=80&w=1400",
-  },
-  {
-    id: 6,
-    title: "Chromatic Motion",
-    style: "Abstract",
-    image: "https://images.unsplash.com/photo-1541961017774-22349e4a1262?q=80&w=1400",
-  },
-  {
-    id: 7,
-    title: "Mountain Silence",
-    style: "Landscape",
-    image: "https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?q=80&w=1400",
-  },
-  {
-    id: 8,
-    title: "City Rhythm",
-    style: "Modern",
-    image: "https://images.unsplash.com/photo-1518998053901-5348d3961a04?q=80&w=1400",
-  },
-];
 
-const styleFilters = ["All", "Landscape", "Abstract", "Modern", "Realism"];
+const getArtStyle = (art) => art?.style || art?.category || "Uncategorized";
 
 const Gallery = () => {
   const [artworks, setArtworks] = useState([]);
+  const [selectedStyle, setSelectedStyle] = useState("All");
   const [error, setError] = useState("");
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const fetchArtworks = async () => {
@@ -68,41 +19,26 @@ const Gallery = () => {
         setArtworks(res.data?.data || []);
       } catch (err) {
         setError(err.response?.data?.message || "Failed to load gallery");
+      } finally {
+        setLoading(false);
       }
     };
 
     fetchArtworks();
   }, []);
 
-  const [selectedStyle, setSelectedStyle] = useState("All");
+  const styleFilters = useMemo(() => {
+    const unique = new Set(artworks.map((art) => getArtStyle(art)));
+    return ["All", ...unique];
+  }, [artworks]);
 
   const filteredArtworks = useMemo(() => {
     if (selectedStyle === "All") return artworks;
-    return artworks.filter((art) => art.style === selectedStyle);
-  }, [selectedStyle]);
+    return artworks.filter((art) => getArtStyle(art) === selectedStyle);
+  }, [artworks, selectedStyle]);
 
   return (
     <section className="gallery">
-      <h1 className="gallery-title">Art Collection</h1>
-      {error ? <p>{error}</p> : null}
-
-      <div className="gallery-grid">
-        {artworks.length === 0 ? <p>No artworks available yet.</p> : null}
-        {artworks.map((art) => (
-          <div key={art._id} className="gallery-card">
-            <img
-              src={getImageUrl(art.image) || FALLBACK_ARTWORK_IMAGE}
-              alt={art.title}
-              onError={(e) => {
-                e.currentTarget.onerror = null;
-                e.currentTarget.src = FALLBACK_ARTWORK_IMAGE;
-              }}
-            />
-            <div className="overlay">
-              <h3>{art.title}</h3>
-            </div>
-          </div>
-        ))}
       <div className="gallery-header">
         <h1 className="gallery-title">
           Art <span>Collection</span>
@@ -113,6 +49,8 @@ const Gallery = () => {
         </p>
       </div>
 
+      {error ? <p className="empty-text">{error}</p> : null}
+
       <div className="gallery-layout">
         <aside className="gallery-filters">
           <h2>Filter By Style</h2>
@@ -120,9 +58,7 @@ const Gallery = () => {
             {styleFilters.map((style) => (
               <button
                 key={style}
-                className={`filter-btn ${
-                  selectedStyle === style ? "active" : ""
-                }`}
+                className={`filter-btn ${selectedStyle === style ? "active" : ""}`}
                 onClick={() => setSelectedStyle(style)}
               >
                 {style}
@@ -132,21 +68,30 @@ const Gallery = () => {
         </aside>
 
         <div className="gallery-content">
+          {loading ? <p className="empty-text">Loading artworks...</p> : null}
+
           <div className="gallery-grid">
             {filteredArtworks.map((art) => (
-              <div key={art.id} className="gallery-card">
-                <img src={art.image} alt={art.title} />
+              <div key={art._id || art.id} className="gallery-card">
+                <img
+                  src={getImageUrl(art.image) || FALLBACK_ARTWORK_IMAGE}
+                  alt={art.title || "Artwork"}
+                  onError={(e) => {
+                    e.currentTarget.onerror = null;
+                    e.currentTarget.src = FALLBACK_ARTWORK_IMAGE;
+                  }}
+                />
                 <div className="overlay">
-                  <h3>{art.title}</h3>
-                  <p>{art.style}</p>
+                  <h3>{art.title || "Untitled"}</h3>
+                  <p>{getArtStyle(art)}</p>
                 </div>
               </div>
             ))}
           </div>
 
-          {filteredArtworks.length === 0 && (
+          {!loading && filteredArtworks.length === 0 ? (
             <p className="empty-text">No artworks found for this style.</p>
-          )}
+          ) : null}
         </div>
       </div>
     </section>
@@ -154,4 +99,3 @@ const Gallery = () => {
 };
 
 export default Gallery;
-
