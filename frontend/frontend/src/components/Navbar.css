@@ -46,7 +46,32 @@
 }
 
 .login-btn {
-  padding: 8px 18px;
-  background: #ff4c60;
-  border-radius: 25px;
+  padding: 0;
+  background: transparent;
+  border-radius: 0;
+  color: white;
+  transition: 0.3s ease;
+}
+
+.login-btn:hover {
+  color: #ff4c60;
+}
+
+.logout-btn {
+  padding: 0;
+  background: transparent;
+  border: none;
+  color: white;
+  font: inherit;
+  cursor: pointer;
+  transition: 0.3s ease;
+}
+
+.logout-btn:hover {
+  color: #ff4c60;
+}
+
+.nav-user {
+  color: #fff;
+  font-weight: 600;
 }

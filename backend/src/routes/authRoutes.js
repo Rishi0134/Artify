@@ -32,18 +32,33 @@ POST /api/auth/register
 router.post(
   "/register",
   [
-    body("name").trim().notEmpty().withMessage("Name is required"),
+    body("name")
+      .trim()
+      .notEmpty()
+      .withMessage("Name is required")
+      .isLength({ min: 2, max: 50 })
+      .withMessage("Name must be between 2 and 50 characters"),
     body("email")
       .isEmail()
       .withMessage("Valid email required")
       .normalizeEmail(),
     body("password")
-      .isLength({ min: 6 })
-      .withMessage("Password must be at least 6 characters"),
+      .isStrongPassword({
+        minLength: 6,
+        minLowercase: 0,
+        minUppercase: 0,
+        minNumbers: 1,
+        minSymbols: 0,
+      })
+      .withMessage("Password must be 6+ chars and include at least one number"),
+    body("role")
+      .optional()
+      .isIn(["artist", "customer", "user"])
+      .withMessage("Role must be artist or customer"),
   ],
   validate,
   asyncHandler(async (req, res) => {
-    const { name, email, password } = req.body;
+    const { name, email, password, role } = req.body;
 
     const userExists = await User.findOne({ email });
 
@@ -56,6 +71,7 @@ router.post(
       name,
       email,
       password,
+      role: role === "user" ? "customer" : role,
     });
 
     res.status(201).json({
@@ -65,6 +81,8 @@ router.post(
         name: user.name,
         email: user.email,
         role: user.role,
+        profileImage: user.profileImage,
+        specialty: user.specialty,
         token: generateToken(user._id, user.role),
       },
     });
@@ -87,7 +105,9 @@ router.post(
       .normalizeEmail(),
     body("password")
       .notEmpty()
-      .withMessage("Password is required"),
+      .withMessage("Password is required")
+      .isLength({ min: 6 })
+      .withMessage("Password must be at least 6 characters"),
   ],
   validate,
   asyncHandler(async (req, res) => {
@@ -114,6 +134,8 @@ router.post(
         name: user.name,
         email: user.email,
         role: user.role,
+        profileImage: user.profileImage,
+        specialty: user.specialty,
         token: generateToken(user._id, user.role),
       },
     });

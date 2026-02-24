@@ -1,9 +1,13 @@
-import { NavLink } from "react-router-dom";
+import { NavLink, useLocation, useNavigate } from "react-router-dom";
 import { useEffect, useState } from "react";
 import "./Navbar.css";
+import { clearStoredAuth, getStoredUser } from "../utils/auth";
 
 const Navbar = () => {
+  const navigate = useNavigate();
+  const location = useLocation();
   const [scrolled, setScrolled] = useState(false);
+  const [user, setUser] = useState(null);
 
   useEffect(() => {
     const handleScroll = () => {
@@ -13,6 +17,16 @@ const Navbar = () => {
     window.addEventListener("scroll", handleScroll);
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
+
+  useEffect(() => {
+    setUser(getStoredUser());
+  }, [location.pathname]);
+
+  const handleLogout = () => {
+    clearStoredAuth();
+    setUser(null);
+    navigate("/", { replace: true });
+  };
 
   return (
     <nav className={`navbar ${scrolled ? "scrolled" : ""}`}>
@@ -46,6 +60,17 @@ const Navbar = () => {
             Contact
           </NavLink>
         </li>
+        {!user ? (
+          <li>
+            <NavLink to="/login" className="login-btn">Login</NavLink>
+          </li>
+        ) : (
+          <li>
+            <button type="button" className="logout-btn" onClick={handleLogout}>
+              Logout
+            </button>
+          </li>
+        )}
       </ul>
     </nav>
   );

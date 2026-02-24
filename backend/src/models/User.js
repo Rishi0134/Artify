@@ -11,6 +11,15 @@ const userSchema = new mongoose.Schema(
       enum: ["admin", "artist", "customer"],
       default: "customer",
     },
+    profileImage: {
+      type: String,
+      default: "",
+    },
+    specialty: {
+      type: String,
+      default: "",
+      trim: true,
+    },
   },
   { timestamps: true }
 );

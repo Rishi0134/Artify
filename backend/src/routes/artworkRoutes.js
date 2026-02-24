@@ -57,6 +57,29 @@ router.get(
 
 /*
 ==================================================
+GET MY ARTWORKS (Artist Only)
+==================================================
+*/
+
+router.get(
+  "/my",
+  protect,
+  authorize("artist"),
+  asyncHandler(async (req, res) => {
+    const artworks = await Artwork.find({ artist: req.user._id }).sort({
+      createdAt: -1,
+    });
+
+    res.json({
+      success: true,
+      count: artworks.length,
+      data: artworks,
+    });
+  })
+);
+
+/*
+==================================================
 GET SINGLE ARTWORK (Public)
 ==================================================
 */

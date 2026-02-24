@@ -1,0 +1,108 @@
+.artist-dashboard h1 {
+  font-size: 2rem;
+}
+
+.artist-dashboard-subtitle {
+  margin-top: 8px;
+  margin-bottom: 20px;
+  color: rgba(255, 255, 255, 0.75);
+}
+
+.artist-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 18px;
+  margin-bottom: 18px;
+}
+
+.artist-card {
+  background: #171717;
+  border: 1px solid rgba(255, 255, 255, 0.09);
+  border-radius: 14px;
+  padding: 16px;
+}
+
+.artist-card h2 {
+  margin-bottom: 12px;
+}
+
+.artist-form {
+  display: grid;
+  gap: 10px;
+}
+
+.artist-form input,
+.artist-form textarea,
+.artist-form select,
+.artist-form button {
+  padding: 10px;
+  border-radius: 8px;
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  background: #101010;
+  color: #fff;
+}
+
+.artist-form textarea {
+  min-height: 90px;
+  resize: vertical;
+}
+
+.artist-form button {
+  cursor: pointer;
+  background: #232323;
+}
+
+.artist-list {
+  display: grid;
+  gap: 10px;
+}
+
+.artist-item {
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 10px;
+  padding: 10px;
+  display: grid;
+  grid-template-columns: 76px 1fr auto;
+  align-items: center;
+  gap: 10px;
+}
+
+.artist-item img {
+  width: 76px;
+  height: 76px;
+  object-fit: cover;
+  border-radius: 8px;
+}
+
+.artist-item h3 {
+  font-size: 1.05rem;
+}
+
+.artist-item p {
+  font-size: 0.9rem;
+  color: rgba(255, 255, 255, 0.78);
+}
+
+.artist-item button,
+.artist-item select {
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  background: #111;
+  color: #fff;
+  border-radius: 8px;
+  padding: 8px 10px;
+}
+
+.order-item {
+  grid-template-columns: 1fr auto;
+}
+
+.artist-error {
+  margin: 10px 0;
+  color: #ff8b99;
+}
+
+@media (max-width: 900px) {
+  .artist-grid {
+    grid-template-columns: 1fr;
+  }
+}
