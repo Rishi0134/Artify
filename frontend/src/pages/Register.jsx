@@ -6,17 +6,18 @@ import "./Auth.css";
 
 const Register = () => {
   const navigate = useNavigate();
-  const [error, setError] = useState("");
-  const [fieldErrors, setFieldErrors] = useState({});
-  const [loading, setLoading] = useState(false);
-  const [confirmPassword, setConfirmPassword] = useState("");
 
   const [formData, setFormData] = useState({
     name: "",
     email: "",
     password: "",
-    role: "customer"
+    role: "customer",
   });
+
+  const [confirmPassword, setConfirmPassword] = useState("");
+  const [error, setError] = useState("");
+  const [fieldErrors, setFieldErrors] = useState({});
+  const [loading, setLoading] = useState(false);
 
   useEffect(() => {
     if (isAuthenticated()) {
@@ -28,59 +29,60 @@ const Register = () => {
     const { name, value } = e.target;
     setError("");
     setFieldErrors((prev) => ({ ...prev, [name]: "" }));
-    setFormData({
-      ...formData,
-      [name]: value
-    });
+    setFormData((prev) => ({
+      ...prev,
+      [name]: value,
+    }));
   };
 
   const validateForm = () => {
-    const nextErrors = {};
+    const errors = {};
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     const nameRegex = /^[A-Za-z\s]{2,50}$/;
     const passwordRegex = /^(?=.*[A-Za-z])(?=.*\d).{6,}$/;
 
     if (!formData.name.trim()) {
-      nextErrors.name = "Full name is required";
+      errors.name = "Full name is required";
     } else if (!nameRegex.test(formData.name.trim())) {
-      nextErrors.name = "Name should be 2-50 letters (spaces allowed)";
+      errors.name = "Name must be 2-50 letters";
     }
 
     if (!formData.email.trim()) {
-      nextErrors.email = "Email is required";
+      errors.email = "Email is required";
     } else if (!emailRegex.test(formData.email)) {
-      nextErrors.email = "Please enter a valid email address";
+      errors.email = "Invalid email format";
     }
 
     if (!formData.password) {
-      nextErrors.password = "Password is required";
+      errors.password = "Password is required";
     } else if (!passwordRegex.test(formData.password)) {
-      nextErrors.password = "Password must be 6+ chars with letters and numbers";
+      errors.password =
+        "Password must be 6+ characters with letters and numbers";
     }
 
     if (!confirmPassword) {
-      nextErrors.confirmPassword = "Please confirm your password";
+      errors.confirmPassword = "Please confirm password";
     } else if (confirmPassword !== formData.password) {
-      nextErrors.confirmPassword = "Passwords do not match";
+      errors.confirmPassword = "Passwords do not match";
     }
 
-    if (!["customer", "artist"].includes(formData.role)) {
-      nextErrors.role = "Please select a valid account type";
-    }
-
-    setFieldErrors(nextErrors);
-    return Object.keys(nextErrors).length === 0;
+    setFieldErrors(errors);
+    return Object.keys(errors).length === 0;
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError("");
+
     if (!validateForm()) return;
+
     setLoading(true);
 
     try {
-      const res = await axios.post("http://localhost:5000/api/auth/register", formData);
-      const userData = res?.data?.data;
+      // ✅ PRODUCTION SAFE (NO LOCALHOST)
+      const response = await axios.post("/api/auth/register", formData);
+
+      const userData = response?.data?.data;
 
       if (!userData?.token) {
         throw new Error("Invalid server response");
@@ -93,8 +95,6 @@ const Register = () => {
           name: userData.name,
           email: userData.email,
           role: userData.role,
-          profileImage: userData.profileImage || "",
-          specialty: userData.specialty || "",
         },
       });
 
@@ -103,9 +103,12 @@ const Register = () => {
       } else {
         navigate("/login");
       }
-    } catch (error) {
-      const validationMessage = error?.response?.data?.errors?.[0]?.msg;
-      setError(validationMessage || error?.response?.data?.message || "Registration failed");
+    } catch (err) {
+      setError(
+        err?.response?.data?.message ||
+          err?.response?.data?.errors?.[0]?.msg ||
+          "Registration failed"
+      );
     } finally {
       setLoading(false);
     }
@@ -115,77 +118,81 @@ const Register = () => {
     <div className="auth-page">
       <div className="auth-card">
         <h2 className="auth-title">Create Account</h2>
-        <p className="auth-subtitle">Join Artify and start your journey.</p>
 
         <form className="auth-form" onSubmit={handleSubmit}>
-          <label className="auth-label" htmlFor="register-name">Full Name</label>
           <input
-            className="auth-input"
-            id="register-name"
+            type="text"
             name="name"
-            placeholder="Your name"
+            placeholder="Full Name"
+            className="auth-input"
             onChange={handleChange}
             required
           />
-          {fieldErrors.name ? <p className="auth-field-error">{fieldErrors.name}</p> : null}
+          {fieldErrors.name && (
+            <p className="auth-field-error">{fieldErrors.name}</p>
+          )}
 
-          <label className="auth-label" htmlFor="register-email">Email</label>
           <input
-            className="auth-input"
-            id="register-email"
-            name="email"
             type="email"
-            placeholder="you@example.com"
+            name="email"
+            placeholder="Email"
+            className="auth-input"
             onChange={handleChange}
             required
           />
-          {fieldErrors.email ? <p className="auth-field-error">{fieldErrors.email}</p> : null}
+          {fieldErrors.email && (
+            <p className="auth-field-error">{fieldErrors.email}</p>
+          )}
 
-          <label className="auth-label" htmlFor="register-password">Password</label>
           <input
-            className="auth-input"
-            id="register-password"
+            type="password"
             name="password"
-            type="password"
-            placeholder="Create a strong password"
+            placeholder="Password"
+            className="auth-input"
             onChange={handleChange}
             required
           />
-          {fieldErrors.password ? <p className="auth-field-error">{fieldErrors.password}</p> : null}
+          {fieldErrors.password && (
+            <p className="auth-field-error">{fieldErrors.password}</p>
+          )}
 
-          <label className="auth-label" htmlFor="register-confirm-password">Confirm Password</label>
           <input
-            className="auth-input"
-            id="register-confirm-password"
-            name="confirmPassword"
             type="password"
-            placeholder="Confirm your password"
+            placeholder="Confirm Password"
+            className="auth-input"
             value={confirmPassword}
             onChange={(e) => {
-              setError("");
-              setFieldErrors((prev) => ({ ...prev, confirmPassword: "" }));
               setConfirmPassword(e.target.value);
+              setFieldErrors((prev) => ({
+                ...prev,
+                confirmPassword: "",
+              }));
             }}
             required
           />
-          {fieldErrors.confirmPassword ? <p className="auth-field-error">{fieldErrors.confirmPassword}</p> : null}
+          {fieldErrors.confirmPassword && (
+            <p className="auth-field-error">
+              {fieldErrors.confirmPassword}
+            </p>
+          )}
 
-          <label className="auth-label" htmlFor="register-role">Account Type</label>
           <select
-            className="auth-select"
-            id="register-role"
             name="role"
+            className="auth-select"
             onChange={handleChange}
           >
             <option value="customer">Customer</option>
             <option value="artist">Artist</option>
           </select>
-          {fieldErrors.role ? <p className="auth-field-error">{fieldErrors.role}</p> : null}
 
-          {error ? <p className="auth-error">{error}</p> : null}
+          {error && <p className="auth-error">{error}</p>}
 
-          <button className="auth-button" type="submit" disabled={loading}>
-            {loading ? "Creating account..." : "Register"}
+          <button
+            type="submit"
+            className="auth-button"
+            disabled={loading}
+          >
+            {loading ? "Creating..." : "Register"}
           </button>
         </form>
 
