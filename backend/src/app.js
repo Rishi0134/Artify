@@ -15,6 +15,10 @@ const errorHandler = require("./middleware/errorMiddleware");
 
 const app = express();
 
+/* =======================
+   SECURITY MIDDLEWARE
+======================= */
+
 app.use(
   helmet({
     crossOriginResourcePolicy: { policy: "cross-origin" },
@@ -22,19 +26,41 @@ app.use(
 );
 
 const limiter = rateLimit({
-  windowMs: 10 * 60 * 1000,
+  windowMs: 10 * 60 * 1000, // 10 minutes
   max: 100,
   message: "Too many requests, try again later",
 });
 
 app.use(limiter);
 app.use(cors());
+
+/* =======================
+   BODY PARSER
+======================= */
+
 app.use(express.json());
+
+/* =======================
+   LOGGER
+======================= */
+
 app.use(morgan("dev"));
 
-app.get("/health", (req, res) => {
-  res.status(200).json({ success: true, message: "OK", data: {} });
+/* =======================
+   HEALTH CHECK
+======================= */
+
+app.get("/api/health", (req, res) => {
+  res.status(200).json({
+    success: true,
+    message: "OK",
+    data: {},
+  });
 });
+
+/* =======================
+   API ROUTES
+======================= */
 
 app.use("/api/auth", authRoutes);
 app.use("/api/users", userRoutes);
@@ -43,12 +69,16 @@ app.use("/api/orders", orderRoutes);
 app.use("/api/chats", chatRoutes);
 app.use("/api/admin", adminRoutes);
 
+/* =======================
+   STATIC UPLOADS
+======================= */
+
 app.use("/uploads", express.static(path.join(__dirname, "../uploads")));
 app.use("/uploads", express.static(path.join(__dirname, "../../uploads")));
 
-app.get("/", (req, res) => {
-  res.status(200).json({ success: true, message: "Artify Backend Running", data: {} });
-});
+/* =======================
+   ERROR HANDLER (ALWAYS LAST)
+======================= */
 
 app.use(errorHandler);
 

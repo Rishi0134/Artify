@@ -1,6 +1,4 @@
 const path = require("path");
-
-// Always load backend/.env regardless of where nodemon is launched from
 require("dotenv").config({ path: path.resolve(__dirname, "../.env") });
 
 const app = require("./app");
@@ -10,12 +8,24 @@ const { syncFixedAdmins } = require("./utils/adminSeeder");
 const PORT = process.env.PORT || 5000;
 
 const startServer = async () => {
-  await connectDB();
-  await syncFixedAdmins();
+  try {
+    // Connect to MongoDB
+    await connectDB();
+    console.log("Database connected");
 
-  app.listen(PORT, () => {
-    console.log(`Server running on port ${PORT}`);
-  });
+    // Seed fixed admin users
+    await syncFixedAdmins();
+    console.log("Admin sync completed");
+
+    // Start backend API server
+    app.listen(PORT, "0.0.0.0", () => {
+      console.log(`Backend running on port ${PORT}`);
+    });
+
+  } catch (error) {
+    console.error("Server failed to start:", error);
+    process.exit(1);
+  }
 };
 
 startServer();

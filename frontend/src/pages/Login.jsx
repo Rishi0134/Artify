@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
-import axios from "axios";
 import { Link, useNavigate } from "react-router-dom";
 import { isAuthenticated, setStoredAuth } from "../utils/auth";
+import { api } from "../utils/api";   // ✅ IMPORTANT
 import "./Auth.css";
 
 const Login = () => {
@@ -25,10 +25,10 @@ const Login = () => {
     const { name, value } = e.target;
     setError("");
     setFieldErrors((prev) => ({ ...prev, [name]: "" }));
-    setFormData({
-      ...formData,
+    setFormData((prev) => ({
+      ...prev,
       [name]: value
-    });
+    }));
   };
 
   const validateForm = () => {
@@ -51,89 +51,102 @@ const Login = () => {
     return Object.keys(nextErrors).length === 0;
   };
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    setError("");
-    if (!validateForm()) return;
-    setLoading(true);
+ const handleSubmit = async (e) => {
+  e.preventDefault();
+  setError("");
+  if (!validateForm()) return;
+  setLoading(true);
 
-    try {
-      const res = await axios.post(
-        "http://localhost:5000/api/auth/login",
-        formData
-      );
+  try {
+    const res = await axios.post(
+      "/api/auth/login",
+      formData
+    );
 
-      const userData = res?.data?.data;
-      if (!userData?.token) {
-        throw new Error("Invalid server response");
-      }
+    const userData = res?.data?.data;
 
-      setStoredAuth({
-        token: userData.token,
-        user: {
-          _id: userData._id,
-          name: userData.name,
-          email: userData.email,
-          role: userData.role,
-          profileImage: userData.profileImage || "",
-          specialty: userData.specialty || "",
-        },
-      });
-
-      if (userData.role === "admin") {
-        navigate("/admin/dashboard");
-      } else if (userData.role === "artist") {
-        navigate("/artist/dashboard");
-      } else {
-        navigate("/");
-      }
-
-    } catch (error) {
-      const validationMessage = error?.response?.data?.errors?.[0]?.msg;
-      const serverMessage = error?.response?.data?.message;
-      const networkMessage = !error?.response
-        ? "Backend is not running. Start backend server on port 5000."
-        : "";
-      setError(validationMessage || serverMessage || networkMessage || "Login failed");
-    } finally {
-      setLoading(false);
+    if (!userData?.token) {
+      throw new Error("Invalid server response");
     }
-  };
+
+    setStoredAuth({
+      token: userData.token,
+      user: {
+        _id: userData._id,
+        name: userData.name,
+        email: userData.email,
+        role: userData.role,
+        profileImage: userData.profileImage || "",
+        specialty: userData.specialty || "",
+      },
+    });
+
+    if (userData.role === "admin") {
+      navigate("/admin/dashboard");
+    } else if (userData.role === "artist") {
+      navigate("/artist/dashboard");
+    } else {
+      navigate("/");
+    }
+
+  } catch (error) {
+    const serverMessage = error?.response?.data?.message;
+    setError(serverMessage || "Login failed");
+  } finally {
+    setLoading(false);
+  }
+};
 
   return (
     <div className="auth-page">
       <div className="auth-card">
         <h2 className="auth-title">Welcome Back</h2>
-        <p className="auth-subtitle">Log in to continue exploring Artify.</p>
+        <p className="auth-subtitle">
+          Log in to continue exploring Artify.
+        </p>
 
         <form className="auth-form" onSubmit={handleSubmit}>
-          <label className="auth-label" htmlFor="login-email">Email</label>
+          <label className="auth-label" htmlFor="login-email">
+            Email
+          </label>
           <input
             className="auth-input"
             id="login-email"
             name="email"
             type="email"
             placeholder="you@example.com"
+            value={formData.email}
             onChange={handleChange}
             required
           />
-          {fieldErrors.email ? <p className="auth-field-error">{fieldErrors.email}</p> : null}
+          {fieldErrors.email && (
+            <p className="auth-field-error">{fieldErrors.email}</p>
+          )}
 
-          <label className="auth-label" htmlFor="login-password">Password</label>
+          <label className="auth-label" htmlFor="login-password">
+            Password
+          </label>
           <input
             className="auth-input"
             id="login-password"
             name="password"
             type="password"
             placeholder="Enter your password"
+            value={formData.password}
             onChange={handleChange}
             required
           />
-          {fieldErrors.password ? <p className="auth-field-error">{fieldErrors.password}</p> : null}
+          {fieldErrors.password && (
+            <p className="auth-field-error">{fieldErrors.password}</p>
+          )}
 
-          {error ? <p className="auth-error">{error}</p> : null}
+          {error && <p className="auth-error">{error}</p>}
 
-          <button className="auth-button" type="submit" disabled={loading}>
+          <button
+            className="auth-button"
+            type="submit"
+            disabled={loading}
+          >
             {loading ? "Logging in..." : "Login"}
           </button>
         </form>
