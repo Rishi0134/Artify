@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { FiEye, FiEyeOff } from "react-icons/fi";
 import { Link, useNavigate } from "react-router-dom";
-import { isAuthenticated, setStoredAuth } from "../utils/auth";
+import { isAuthenticated } from "../utils/auth";
 import { api } from "../utils/api";
 import "./Auth.css";
 
@@ -81,29 +81,8 @@ const Register = () => {
     setLoading(true);
 
     try {
-      const response = await api.post("/api/auth/register", formData);
-
-      const userData = response?.data?.data;
-
-      if (!userData?.token) {
-        throw new Error("Invalid server response");
-      }
-
-      setStoredAuth({
-        token: userData.token,
-        user: {
-          _id: userData._id,
-          name: userData.name,
-          email: userData.email,
-          role: userData.role,
-        },
-      });
-
-      if (userData.role === "artist") {
-        navigate("/artist/dashboard");
-      } else {
-        navigate("/login");
-      }
+      await api.post("/api/auth/register", formData);
+      navigate("/login", { replace: true });
     } catch (requestError) {
       setError(
         requestError?.response?.data?.message ||
