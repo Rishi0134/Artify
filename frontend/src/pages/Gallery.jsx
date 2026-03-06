@@ -1,5 +1,8 @@
 import { useEffect, useMemo, useState } from "react";
+import { Link, useNavigate } from "react-router-dom";
 import { api, getImageUrl } from "../utils/api";
+import { getStoredUser } from "../utils/auth";
+import { shopApi } from "../utils/shopApi";
 import "./Gallery.css";
 
 const FALLBACK_ARTWORK_IMAGE = "https://via.placeholder.com/600x600?text=Artwork";
@@ -7,10 +10,13 @@ const FALLBACK_ARTWORK_IMAGE = "https://via.placeholder.com/600x600?text=Artwork
 const getArtStyle = (art) => art?.style || art?.category || "Uncategorized";
 
 const Gallery = () => {
+  const navigate = useNavigate();
   const [artworks, setArtworks] = useState([]);
   const [selectedStyle, setSelectedStyle] = useState("All");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(true);
+  const user = getStoredUser();
+  const canShop = user && ["user", "customer"].includes(user.role);
 
   useEffect(() => {
     const fetchArtworks = async () => {
@@ -36,6 +42,19 @@ const Gallery = () => {
     if (selectedStyle === "All") return artworks;
     return artworks.filter((art) => getArtStyle(art) === selectedStyle);
   }, [artworks, selectedStyle]);
+
+  const handleAddToCart = async (artworkId) => {
+    if (!canShop) {
+      navigate("/login");
+      return;
+    }
+
+    try {
+      await shopApi.addToCart(artworkId, 1);
+    } catch (requestError) {
+      setError(requestError.response?.data?.message || "Failed to add to cart");
+    }
+  };
 
   return (
     <section className="gallery">
@@ -73,17 +92,26 @@ const Gallery = () => {
           <div className="gallery-grid">
             {filteredArtworks.map((art) => (
               <div key={art._id || art.id} className="gallery-card">
-                <img
-                  src={getImageUrl(art.image) || FALLBACK_ARTWORK_IMAGE}
-                  alt={art.title || "Artwork"}
-                  onError={(e) => {
-                    e.currentTarget.onerror = null;
-                    e.currentTarget.src = FALLBACK_ARTWORK_IMAGE;
-                  }}
-                />
+                <Link to={`/gallery/${art._id || art.id}`}>
+                  <img
+                    src={getImageUrl(art.image) || FALLBACK_ARTWORK_IMAGE}
+                    alt={art.title || "Artwork"}
+                    onError={(e) => {
+                      e.currentTarget.onerror = null;
+                      e.currentTarget.src = FALLBACK_ARTWORK_IMAGE;
+                    }}
+                  />
+                </Link>
                 <div className="overlay">
                   <h3>{art.title || "Untitled"}</h3>
                   <p>{getArtStyle(art)}</p>
+                  <button
+                    type="button"
+                    className="gallery-cart-btn"
+                    onClick={() => handleAddToCart(art._id || art.id)}
+                  >
+                    Add To Cart
+                  </button>
                 </div>
               </div>
             ))}

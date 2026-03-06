@@ -12,8 +12,21 @@ const ActivityLog = require("../models/ActivityLog");
 const { isFixedAdminEmail, FIXED_ADMIN_EMAILS } = require("../config/adminAccounts");
 
 const FIXED_ADMIN_EMAIL_LIST = Array.from(FIXED_ADMIN_EMAILS);
+const TRACKING_ALLOWED_STATUS = [
+  "pending",
+  "accepted",
+  "processing",
+  "shipped",
+  "out_for_delivery",
+  "delivered",
+  "completed",
+  "rejected",
+  "cancelled",
+];
 
 const normalizeUserRole = (role = "") => (role === "customer" ? "user" : role);
+const firstOrderArtworkTitle = (order) =>
+  order?.items?.[0]?.titleSnapshot || order?.artwork?.title || "";
 
 const buildSearchFilter = (search, fields = []) => {
   if (!search) return {};
@@ -493,11 +506,7 @@ const listOrders = asyncHandler(async (req, res) => {
 
   const orders = await Order.find(query)
     .populate("customer", "name email")
-    .populate({
-      path: "artwork",
-      select: "title artist",
-      populate: { path: "artist", select: "name email" },
-    })
+    .populate({ path: "items.artwork", select: "title artist image" })
     .sort({ createdAt: -1 });
 
   const filteredOrders = orders.filter((order) => {
@@ -506,7 +515,7 @@ const listOrders = asyncHandler(async (req, res) => {
     const term = search.toLowerCase();
     const customerName = order.customer?.name?.toLowerCase() || "";
     const customerEmail = order.customer?.email?.toLowerCase() || "";
-    const artworkTitle = order.artwork?.title?.toLowerCase() || "";
+    const artworkTitle = firstOrderArtworkTitle(order).toLowerCase();
 
     return (
       customerName.includes(term) ||
@@ -516,10 +525,14 @@ const listOrders = asyncHandler(async (req, res) => {
   });
 
   const paginated = filteredOrders.slice(skip, skip + limit);
+  const normalized = paginated.map((order) => ({
+    ...order.toObject(),
+    artwork: order.items?.[0]?.artwork || order.artwork || null,
+  }));
 
   return sendResponse(res, {
     message: "Orders fetched",
-    data: paginated,
+    data: normalized,
     meta: buildPaginationMeta({ page, limit, total: filteredOrders.length }),
   });
 });
@@ -527,7 +540,7 @@ const listOrders = asyncHandler(async (req, res) => {
 const getOrderDetails = asyncHandler(async (req, res) => {
   const order = await Order.findById(req.params.id)
     .populate("customer", "name email role")
-    .populate({ path: "artwork", populate: { path: "artist", select: "name email" } });
+    .populate({ path: "items.artwork", populate: { path: "artist", select: "name email" } });
 
   if (!order || order.isDeleted) {
     res.status(404);
@@ -536,14 +549,17 @@ const getOrderDetails = asyncHandler(async (req, res) => {
 
   return sendResponse(res, {
     message: "Order details fetched",
-    data: order,
+    data: {
+      ...order.toObject(),
+      artwork: order.items?.[0]?.artwork || order.artwork || null,
+    },
   });
 });
 
 const updateOrderStatus = asyncHandler(async (req, res) => {
   const { status } = req.body;
 
-  if (!["pending", "accepted", "rejected", "completed", "cancelled"].includes(status)) {
+  if (!TRACKING_ALLOWED_STATUS.includes(status)) {
     res.status(400);
     throw new Error("Invalid order status");
   }
@@ -556,6 +572,13 @@ const updateOrderStatus = asyncHandler(async (req, res) => {
   }
 
   order.status = status;
+  order.trackingTimeline = order.trackingTimeline || [];
+  order.trackingTimeline.push({
+    status,
+    note: `Order status updated by admin to ${status}`,
+    updatedBy: req.user._id,
+    at: new Date(),
+  });
   await order.save();
 
   await logActivity({
@@ -582,6 +605,13 @@ const refundOrder = asyncHandler(async (req, res) => {
   }
 
   order.paymentStatus = "refunded";
+  order.trackingTimeline = order.trackingTimeline || [];
+  order.trackingTimeline.push({
+    status: order.status,
+    note: "Payment refunded by admin",
+    updatedBy: req.user._id,
+    at: new Date(),
+  });
   order.refund = {
     isRefunded: true,
     reason,
@@ -773,11 +803,12 @@ const userGrowth = asyncHandler(async (req, res) => {
 const topSellingArtworks = asyncHandler(async (req, res) => {
   const data = await Order.aggregate([
     { $match: { isDeleted: false, status: { $in: ["accepted", "completed"] } } },
+    { $unwind: "$items" },
     {
       $group: {
-        _id: "$artwork",
-        totalSales: { $sum: 1 },
-        totalRevenue: { $sum: "$price" },
+        _id: "$items.artwork",
+        totalSales: { $sum: "$items.quantity" },
+        totalRevenue: { $sum: "$items.subtotal" },
       },
     },
     { $sort: { totalSales: -1, totalRevenue: -1 } },
@@ -811,20 +842,12 @@ const topSellingArtworks = asyncHandler(async (req, res) => {
 const topArtists = asyncHandler(async (req, res) => {
   const data = await Order.aggregate([
     { $match: { isDeleted: false, status: { $in: ["accepted", "completed"] } } },
-    {
-      $lookup: {
-        from: "artworks",
-        localField: "artwork",
-        foreignField: "_id",
-        as: "artwork",
-      },
-    },
-    { $unwind: "$artwork" },
+    { $unwind: "$items" },
     {
       $group: {
-        _id: "$artwork.artist",
-        orders: { $sum: 1 },
-        revenue: { $sum: "$price" },
+        _id: "$items.artist",
+        orders: { $sum: "$items.quantity" },
+        revenue: { $sum: "$items.subtotal" },
       },
     },
     { $sort: { revenue: -1, orders: -1 } },

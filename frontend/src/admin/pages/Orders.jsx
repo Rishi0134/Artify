@@ -86,6 +86,10 @@ const Orders = () => {
           <option value="">All Status</option>
           <option value="pending">Pending</option>
           <option value="accepted">Accepted</option>
+          <option value="processing">Processing</option>
+          <option value="shipped">Shipped</option>
+          <option value="out_for_delivery">Out for Delivery</option>
+          <option value="delivered">Delivered</option>
           <option value="rejected">Rejected</option>
           <option value="completed">Completed</option>
           <option value="cancelled">Cancelled</option>
@@ -152,6 +156,9 @@ const Orders = () => {
             <h3>Order Details</h3>
             <p>
               <strong>Artwork:</strong> {selectedOrder.artwork?.title || "N/A"}
+            </p>
+            <p>
+              <strong>Items:</strong> {selectedOrder.items?.length || 0}
             </p>
             <p>
               <strong>Customer:</strong> {selectedOrder.customer?.name || "N/A"}

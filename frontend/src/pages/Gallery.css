@@ -143,6 +143,16 @@
   color: #d8d8d8;
 }
 
+.gallery-cart-btn {
+  margin-top: 10px;
+  border: none;
+  border-radius: 6px;
+  padding: 8px 10px;
+  cursor: pointer;
+  background: #ff4c60;
+  color: #fff;
+}
+
 .empty-text {
   margin-top: 20px;
   color: #bbbbbb;
@@ -180,4 +190,3 @@
     height: 320px;
   }
 }
-

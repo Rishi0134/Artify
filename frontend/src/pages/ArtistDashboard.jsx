@@ -176,7 +176,7 @@ const ArtistDashboard = () => {
                 <h3>{order.artwork?.title || "Artwork"}</h3>
                 <p>Customer: {order.customer?.name}</p>
                 <p>Email: {order.customer?.email}</p>
-                <p>Price: Rs. {order.price}</p>
+                <p>Order Value (Your Items): Rs. {order.artistTotal || order.price}</p>
                 <p>Status: {order.status}</p>
               </div>
               <select
@@ -185,6 +185,10 @@ const ArtistDashboard = () => {
               >
                 <option value="pending">Pending</option>
                 <option value="accepted">Accepted</option>
+                <option value="processing">Processing</option>
+                <option value="shipped">Shipped</option>
+                <option value="out_for_delivery">Out for Delivery</option>
+                <option value="delivered">Delivered</option>
                 <option value="rejected">Rejected</option>
                 <option value="completed">Completed</option>
               </select>

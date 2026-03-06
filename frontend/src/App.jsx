@@ -10,6 +10,9 @@ import About from "./pages/About";
 import Contact from "./pages/Contact";
 import Login from "./pages/Login";
 import ArtworkDetails from "./pages/ArtworkDetails";
+import Cart from "./pages/Cart";
+import Checkout from "./pages/Checkout";
+import MyOrders from "./pages/MyOrders";
 import Register from "./pages/Register";
 import ArtistDashboard from "./pages/ArtistDashboard";
 import ChatPage from "./pages/ChatPage";
@@ -33,6 +36,30 @@ function App() {
           <Route path="/" element={<Home />} />
           <Route path="/gallery" element={<Gallery />} />
           <Route path="/gallery/:id" element={<ArtworkDetails />} />
+          <Route
+            path="/cart"
+            element={
+              <ProtectedRoute roles={["customer", "user"]}>
+                <Cart />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/checkout"
+            element={
+              <ProtectedRoute roles={["customer", "user"]}>
+                <Checkout />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/my-orders"
+            element={
+              <ProtectedRoute roles={["customer", "user"]}>
+                <MyOrders />
+              </ProtectedRoute>
+            }
+          />
           <Route path="/artists" element={<ArtistsPage />} />
           <Route path="/about" element={<About />} />
           <Route path="/contact" element={<Contact />} />
