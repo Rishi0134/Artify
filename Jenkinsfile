@@ -2,12 +2,11 @@ pipeline {
     agent any
 
     stages {
-
-        stage('Clone') {
-            steps {
-                git 'https://github.com/madhvi2512/Artify-Virtual_Art_Gallery.git'
-            }
-        }
+     stage('Clone') {
+       steps {
+        git branch: 'main', url: 'https://github.com/madhvi2512/Artify-Virtual_Art_Gallery.git'
+    }
+}
 
         stage('Clean Old Containers') {
             steps {
