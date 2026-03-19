@@ -9,16 +9,16 @@ pipeline {
             }
         }
 
-        stage('Build Docker Images') {
+        stage('Clean Old Containers') {
             steps {
-                bat 'docker-compose build'
+                bat 'docker stop $(docker ps -q) || exit 0'
+                bat 'docker rm $(docker ps -aq) || exit 0'
             }
         }
 
-        stage('Deploy Containers') {
+        stage('Build & Deploy') {
             steps {
-                bat 'docker-compose down'
-                bat 'docker-compose up -d'
+                bat 'docker-compose up --build -d'
             }
         }
 
