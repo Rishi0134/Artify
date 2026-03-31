@@ -22,3 +22,10 @@ spec:
         image: 523883707511.dkr.ecr.ap-south-1.amazonaws.com/artifyy-frontend:latest
         ports:
         - containerPort: 80
+    resources:
+            requests:
+              cpu: "200m"
+              memory: "256Mi"
+            limits:
+              cpu: "300m"
+              memory: "512Mi"    
