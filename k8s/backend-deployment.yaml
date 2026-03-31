@@ -29,3 +29,10 @@ spec:
               value: "mongodb+srv://rishipatel7172:LwqICGoMd3vokXWq@cluster0.odttxqg.mongodb.net/?appName=Cluster0"
             - name: JWT_SECRET
               value: "your_super_secret_key"
+          resources:
+            requests:
+              cpu: "200m"
+              memory: "256Mi"
+            limits:
+              cpu: "300m"
+              memory: "512Mi"
