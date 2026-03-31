@@ -31,8 +31,8 @@ spec:
               value: "your_super_secret_key"
           resources:
             requests:
-              cpu: "200m"
-              memory: "256Mi"
+              cpu: "50m"
+              memory: "64Mi"
             limits:
-              cpu: "300m"
-              memory: "512Mi"
+              cpu: "100m"
+              memory: "128Mi"
