@@ -60,10 +60,10 @@ jobs:
       - name: Deploy Backend
         run: |
           kubectl set image deployment/artifyy-backend backend=$BACKEND_IMAGE
-          kubectl rollout status deployment/backend
+          kubectl rollout status deployment/artifyy-backend
 
       # 8. Deploy Frontend
       - name: Deploy Frontend
         run: |
           kubectl set image deployment/artifyy-frontend frontend=$FRONTEND_IMAGE
-          kubectl rollout status deployment/frontend
+          kubectl rollout status deployment/artifyy-frontend
