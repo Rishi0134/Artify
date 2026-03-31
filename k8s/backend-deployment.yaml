@@ -1,0 +1,26 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: artifyy-backend
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: artifyy-backend
+  template:
+    metadata:
+      labels:
+        app: artifyy-backend
+    spec:
+      containers:
+      - name: backend
+        image: 523883707511.dkr.ecr.ap-south-1.amazonaws.com/artifyy-backend:latest
+        ports:
+        - containerPort: 5000
+        env:
+        - name: PORT
+          value: "5000"
+        - name: MONGO_URI
+          value: "mongodb+srv://rishipatel7172:LwqICGoMd3vokXWq@cluster0.odttxqg.mongodb.net/?appName=Cluster0"
+        - name: JWT_SECRET
+          value: "your_super_secret_key"

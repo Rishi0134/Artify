@@ -1,0 +1,19 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: artifyy-frontend
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: artifyy-frontend
+  template:
+    metadata:
+      labels:
+        app: artifyy-frontend
+    spec:
+      containers:
+      - name: frontend
+        image: 523883707511.dkr.ecr.ap-south-1.amazonaws.com/artifyy-frontend:latest
+        ports:
+        - containerPort: 80
