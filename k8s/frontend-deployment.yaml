@@ -4,8 +4,6 @@ metadata:
   name: artifyy-frontend
 spec:
   replicas: 1
-  strategy:
-    type: Recreate
   selector:
     matchLabels:
       app: artifyy-frontend
@@ -19,5 +17,4 @@ spec:
         image: 523883707511.dkr.ecr.ap-south-1.amazonaws.com/artifyy-frontend:latest
         ports:
         - containerPort: 80
-    resources:
    

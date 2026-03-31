@@ -59,11 +59,11 @@ jobs:
       # 7. Deploy Backend
       - name: Deploy Backend
         run: |
-          kubectl set image deployment/artifyy-backend backend=$BACKEND_IMAGE
-          kubectl rollout status deployment/artifyy-backend
+          kubectl delete deployment artifyy-backend || true
+          kubectl apply -f k8s/backend-deployment.yaml
 
       # 8. Deploy Frontend
       - name: Deploy Frontend
         run: |
-          kubectl set image deployment/artifyy-frontend frontend=$FRONTEND_IMAGE
-          kubectl rollout status deployment/artifyy-frontend
+          kubectl delete deployment artifyy-frontend || true
+          kubectl apply -f k8s/frontend-deployment.yaml
